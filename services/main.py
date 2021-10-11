@@ -3,12 +3,22 @@ import errno, sys
 import json
 import time 
 
+device = '/dev/ttyUSB0'
+rfid = os.open(device, os.O_RDWR)
+serie = serial.Serial(
+        device,
+        19200, 
+        timeout=1,
+        bytesize=serial.EIGHTBITS, 
+        parity=serial.PARITY_NONE, 
+        stopbits=serial.STOPBITS_ONE)
 
 empty = "b''"
 clients = {"00:b6:b7:00:11:00:01:04:e0:00:e6:00:", "00:00:b1:00:11:00:01:04:e0:f9:87:00:", "00:00:a7:df:10:00:01:04:e0:12:d3:00:"}
 
 f = open('services/data.json',"r")
 data = json.load(f)
+
 
 def str_match(str1,str2):
     #Retourne le pourcentage de corrélation entre deux string
@@ -21,22 +31,17 @@ def str_match(str1,str2):
         r = (c*100)/len(str1)
     return r
 
-try:
-    device = '/dev/ttyUSB0'
+def init():
+    os.write(rfid, b'\xFE')
+    os.write(rfid, b'\xFC')
 
-    rfid = os.open(device, os.O_RDWR)
-    serie = serial.Serial(
-        device,
-        19200, 
-        timeout=1,
-        bytesize=serial.EIGHTBITS, 
-        parity=serial.PARITY_NONE, 
-        stopbits=serial.STOPBITS_ONE)
+def fast_mode():
 
     #Le fast mode surveille constement les environs, il permet d'attendre l'arrivée d'un badge 
     os.write(rfid, b'\xFB')
-    print("Fast mode active")
+    print("Fast mode on")
     
+
     while True:
         data = serie.read()
         if str(data)!= empty:
@@ -50,7 +55,6 @@ try:
                 id+=':'
                 #print(str(data))
 
-            #print("Before regulation: "+id+"\n")
             #On remplit les trous dans l'ID par 00 par défaut
             for i in range(len(id)-1):
                 if id[i]==id[i+1]==":":
@@ -60,15 +64,18 @@ try:
                 match = str_match(id,i)
                 if match > 80:
                     print("Ouverture de la porte")
+                    time.sleep(1)
+                    #os.write(rfid, b'\xF7')
 
+try:
+    init()
+    
+    time.sleep(2)
 
-            #print("After regulation: "+id+"\n")
-            #Exit pour afficher les résultats clairement
-            #os.close(rfid)
-            #serie.close()
-            #sys.exit(0)
-            #for i in data['clients']:
-                
+    fast_mode()
+
+    #print("exited")
+
 except KeyboardInterrupt:
     print("close")
     os.close(rfid)
