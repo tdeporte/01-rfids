@@ -2,6 +2,7 @@ import os, serial, time
 import errno, sys
 import json
 import time 
+import re
 
 device = '/dev/ttyUSB0'
 rfid = os.open(device, os.O_RDWR)
@@ -35,46 +36,70 @@ def init():
     os.write(rfid, b'\xFE')
     os.write(rfid, b'\xFC')
 
+def fill_holes(id):
+    for i in range(len(id)-1):
+        if id[i]==id[i+1]==":":
+            id=id[:i+1]+"00"+id[i+1:]
+    return id
+
+def read_UID():
+    id = ""
+    #Boucle afin de récupérer l'ID du badge entier
+    for i in range(12) :
+        #Lit l'id d'un tag proche du récepteur 
+        os.write(rfid, b'\xFA')
+        data = serie.read()
+        id+=str(data)[4:6]
+        id+=':'
+        #print(str(data))
+
+    #On remplit les trous dans l'ID par 00 par défaut
+    id = fill_holes(id)
+    print(id)
+    for i in clients:
+        match = str_match(id,i)
+        print(match)
+        if match > 50:
+            print("Ouverture de la porte")
+            time.sleep(1)
+            os.write(rfid, b'\xFF')
+            time.sleep(3)
+            print("Fermeture de la porte")
+            os.write(rfid, b'\xFE')
+
+
 def fast_mode():
 
-    #Le fast mode surveille constement les environs, il permet d'attendre l'arrivée d'un badge 
+    #Le fast mode surveille constamment les environs, il permet d'attendre l'arrivée d'un badge 
     os.write(rfid, b'\xFB')
     print("Fast mode on")
     
-
     while True:
         data = serie.read()
         if str(data)!= empty:
-            id = ""
-            #Boucle afin de récupérer l'ID du badge entier
-            for i in range(12) :
-                #Lit l'id d'un tag proche du récepteur 
-                os.write(rfid, b'\xFA')
-                data = serie.read()
-                id+=str(data)[4:6]
-                id+=':'
-                #print(str(data))
-
-            #On remplit les trous dans l'ID par 00 par défaut
-            for i in range(len(id)-1):
-                if id[i]==id[i+1]==":":
-                    id=id[:i+1]+"00"+id[i+1:]
-
-            for i in clients:
-                match = str_match(id,i)
-                if match > 80:
-                    print("Ouverture de la porte")
-                    time.sleep(1)
-                    #os.write(rfid, b'\xF7')
+            read_UID()
 
 try:
-    init()
     
-    time.sleep(2)
+    init()
 
-    fast_mode()
+    while True:
+        action = input("(1) Lire badge (doit être près du récepteur)\n(2) Activer Fast Mode\n(3)Quitter \n")
+        
+        if action == "1":
+            print("Lecture :")
+            read_UID()
 
-    #print("exited")
+        if action == "2":
+            fast_mode()
+        
+        if action == "3":
+            print("close")
+            os.close(rfid)
+            serie.close()
+
+        time.sleep(1)
+
 
 except KeyboardInterrupt:
     print("close")
