@@ -18,7 +18,7 @@ empty = "b''"
 
 clients= {"00:b6:b7:00:11:00:01:04:e0:00:e6:00:", "00:00:b1:00:11:00:01:04:e0:f9:87:00:", "00:00:a7:df:10:00:01:04:e0:12:d3:00:"}
 
-fast_mode = False
+fast = 0
 
 def str_match(str1,str2):
     #Retourne le pourcentage de corrélation entre deux string
@@ -53,9 +53,10 @@ def read_UID():
 
     #On remplit les trous dans l'ID par 00 par défaut
     id = fill_holes(id)
-    
-    id = id[3:36] + "00:"
 
+    if fast == 0:
+        id = id[3:36] + "00:"
+        print(id)
     
     for i in clients:   
         match = str_match(id,i)
@@ -71,7 +72,7 @@ def read_UID():
 def fast_mode():
     #Le fast mode surveille constamment les environs, il permet d'attendre l'arrivée d'un badge 
     os.write(rfid, b'\xFB')
-    fast_mode=True
+    fast=1
     print("Fast mode on")
     
     while True:
