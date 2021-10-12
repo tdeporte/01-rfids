@@ -57,7 +57,7 @@ def read_UID():
 
     #On remplit les trous dans l'ID par 00 par défaut
     id = fill_holes(id)
-    print(id)
+    #print(id)
 
     liste_clients = clients
     if fast_mode == True:
@@ -65,9 +65,9 @@ def read_UID():
 
     for i in liste_clients:   
         match = str_match(id,i)
-        print(id)
-        print(i)
-        print(match)
+        #print(id)
+        #print(i)
+        #print(match)
         if match > 90:
             print("Ouverture de la porte")
             time.sleep(1)
@@ -94,7 +94,7 @@ try:
     init()
 
     while True:
-        action = input("(1) Lire badge (doit être près du récepteur)\n(2) Activer Fast Mode\n(3)Quitter \n")
+        action = input("(1) Lire badge (doit être près du récepteur)\n(2) Activer Fast Mode\n(3) Quitter \n")
         
         if action == "1":
             print("Lecture :")
