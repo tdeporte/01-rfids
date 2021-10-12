@@ -15,11 +15,8 @@ serie = serial.Serial(
         stopbits=serial.STOPBITS_ONE)
 
 empty = "b''"
-clients = {"00:00:b6:b7:00:11:00:01:04:e0:00:e6:", "00:00:00:b1:00:11:00:01:04:e0:f9:87:", "00:00:00:a7:df:10:00:01:04:e0:12:d3:"}
-clients_fast_mode = {"00:b6:b7:00:11:00:01:04:e0:00:e6:00:", "00:00:b1:00:11:00:01:04:e0:f9:87:00:", "00:00:a7:df:10:00:01:04:e0:12:d3:00:"}
 
-f = open('services/data.json',"r")
-data = json.load(f)
+clients= {"00:b6:b7:00:11:00:01:04:e0:00:e6:00:", "00:00:b1:00:11:00:01:04:e0:f9:87:00:", "00:00:a7:df:10:00:01:04:e0:12:d3:00:"}
 
 fast_mode = False
 
@@ -53,21 +50,15 @@ def read_UID():
         data = serie.read()
         id+=str(data)[4:6]
         id+=':'
-        #print(str(data))
 
     #On remplit les trous dans l'ID par 00 par défaut
     id = fill_holes(id)
-    #print(id)
+    
+    id = id[3:36] + "00:"
 
-    liste_clients = clients
-    if fast_mode == True:
-        liste_clients = clients_fast_mode
-
-    for i in liste_clients:   
+    
+    for i in clients:   
         match = str_match(id,i)
-        #print(id)
-        #print(i)
-        #print(match)
         if match > 90:
             print("Ouverture de la porte")
             time.sleep(1)
@@ -78,7 +69,6 @@ def read_UID():
 
 
 def fast_mode():
-    
     #Le fast mode surveille constamment les environs, il permet d'attendre l'arrivée d'un badge 
     os.write(rfid, b'\xFB')
     fast_mode=True
