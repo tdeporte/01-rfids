@@ -1,8 +1,5 @@
 import os, serial, time
-import errno, sys
 
-id = ""
-empty = "b''"
 try:
     device = '/dev/ttyUSB0'
 
@@ -20,21 +17,12 @@ try:
     print("Fast mode active")
     
     while True:
-        data = serie.read()
-        if str(data)!= empty:
-            #Boucle afin de récupérer l'ID du badge entier
-            for i in range(12) :
-                #Lit l'id d'un tag proche du récepteur 
-                os.write(rfid, b'\xFA')
-                data = serie.read()
-                id+=str(data)[4:6]
-                id+=':'
-                #print(str(data))
-            print(id)
-            #Exit pour afficher les résultats clairement
-            os.close(rfid)
-            serie.close()
-            sys.exit(0)
+        os.write(rfid, b'\xFA')
+        data = serie.read(12)
+
+        if data != str.encode(''):
+            print(data.decode("utf-8"))
+            time.sleep(1)
 
     
 
