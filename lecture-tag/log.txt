@@ -1,0 +1,2 @@
+Fast mode active
+id TAG: 00:b6:b7::11:00:01:04:e0::e6:00:

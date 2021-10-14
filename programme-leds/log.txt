@@ -1,0 +1,3 @@
+LED rouge allumÃ©e
+Attente de 3 seconde(s)
+LED rouge Ã©teinte
