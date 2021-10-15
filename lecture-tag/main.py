@@ -14,29 +14,16 @@ try:
         bytesize=serial.EIGHTBITS, 
         parity=serial.PARITY_NONE, 
         stopbits=serial.STOPBITS_ONE)
-
-    #Le fast mode surveille constement les environs, il permet d'attendre l'arrivée d'un badge 
-    os.write(rfid, b'\xFB')
-    print("Fast mode active")
     
     while True:
-        data = serie.read()
+        os.write(rfid, b'\xFA')
+        data = serie.read(12)
+        
         if str(data)!= empty:
-            #Boucle afin de récupérer l'ID du badge entier
-            for i in range(12) :
-                #Lit l'id d'un tag proche du récepteur 
-                os.write(rfid, b'\xFA')
-                data = serie.read()
-                id+=str(data)[4:6]
-                id+=':'
-                #print(str(data))
-            print(id)
-            #Exit pour afficher les résultats clairement
-            os.close(rfid)
-            serie.close()
-            sys.exit(0)
-
-    
+            data = str(data).replace('\\x', ':')
+            data = data[3:len(data)-1]
+            print(data)
+            time.sleep(1)
 
 except KeyboardInterrupt:
     print("close")
