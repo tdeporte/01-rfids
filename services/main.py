@@ -35,10 +35,13 @@ def init():
     os.write(rfid, b'\xFE')
     os.write(rfid, b'\xFC')
 
-def fill_holes(id):
+def fill_holes(id): 
     for i in range(len(id)-1):
-        if id[i]==id[i+1]==":":
+        if id[i]==id[i+1]==":" :
             id=id[:i+1]+"00"+id[i+1:]
+            #print(id)
+            if len(id)<36:
+                fill_holes(id)
     return id
 
 def read_UID():
@@ -53,29 +56,35 @@ def read_UID():
 
     #On remplit les trous dans l'ID par 00 par défaut
     id = fill_holes(id)
-
+    
     if fast == 0:
         id = id[3:36] + "00:"
-        print(id)
+        
+    else :
+        if fast==1:
+            id = id[0:32] + ":00:" 
+    #print(id)
     
     for i in clients:   
         match = str_match(id,i)
         if match > 90:
             print("Ouverture de la porte")
             time.sleep(1)
+            print("Allumage LED verte")
             os.write(rfid, b'\xFF')
             time.sleep(3)
             print("Fermeture de la porte")
+            time.sleep(1)
+            print("Extinction LED verte")
             os.write(rfid, b'\xFE')
 
 
 def fast_mode():
-    #Le fast mode surveille constamment les environs, il permet d'attendre l'arrivée d'un badge 
-    os.write(rfid, b'\xFB')
-    fast=1
+    #Le fast mode surveille constamment les environs, il permet d'attendre l'arrivée d'un badge     
     print("Fast mode on")
     
     while True:
+        os.write(rfid, b'\xFA')
         data = serie.read()
         if str(data)!= empty:
             read_UID()
@@ -92,6 +101,7 @@ try:
             read_UID()
 
         if action == "2":
+            fast=1
             fast_mode()
         
         if action == "3":
